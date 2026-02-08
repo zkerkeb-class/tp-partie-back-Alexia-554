@@ -1,6 +1,5 @@
 import express from "express";
 import pokemon from "../schema/pokemon.js";
-import pokemonsList from "../data/pokemonsList.js";
 import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -136,22 +135,25 @@ router.get("/types/all", async (req, res) => {
 
 /**
  * Route : POST /pokemons/import
- * Description : Importer tous les Pokémons du fichier JSON dans la base de données
- * Cette route doit être appelée une seule fois pour initialiser la base de données
- * 
- * Authentification : Optionnelle (à modifier en production)
- * 
- * Réponse exemple :
- * {
- *   "message": "800 Pokémons importés avec succès",
- *   "count": 800
- * }
+ * Description : Importer des Pokémons dans la base de données.
+ * Attendu : fournir un tableau `pokemons` dans le corps de la requête (JSON)
+ * Exemple de body : { "pokemons": [ { id: 1, name: {...}, type: [...], base: {...}, image: "..." }, ... ] }
+ * Si aucun tableau n'est fourni, la route renvoie une instruction pour utiliser le script de seed (`npm run seed`).
  */
 router.post("/import", async (req, res) => {
     try {
-        // Vérifier si des Pokémons existent déjà dans la base de données
+        const pokemons = req.body && req.body.pokemons;
+
+        // Si aucun tableau fourni, indiquer la méthode de seed
+        if (!pokemons || !Array.isArray(pokemons) || pokemons.length === 0) {
+            return res.status(400).json({
+                error: "Aucun tableau de Pokémons fourni",
+                message: "Fournissez un tableau JSON 'pokemons' dans le body ou exécutez 'npm run seed' pour initialiser la base de données."
+            });
+        }
+
+        // Vérifier si des Pokémons existent déjà
         const existingCount = await pokemon.countDocuments();
-        
         if (existingCount > 0) {
             return res.status(400).json({
                 error: "Pokémons déjà importés",
@@ -159,8 +161,8 @@ router.post("/import", async (req, res) => {
             });
         }
 
-        // Importer tous les Pokémons du fichier JSON
-        const result = await pokemon.insertMany(pokemonsList);
+        // Insérer les Pokémons fournis dans la base de données
+        const result = await pokemon.insertMany(pokemons);
 
         res.status(201).json({
             message: `✅ ${result.length} Pokémons importés avec succès`,
