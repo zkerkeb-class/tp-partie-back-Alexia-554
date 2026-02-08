@@ -1,5 +1,38 @@
 import dotenv from 'dotenv';
 
+/**
+ * ========================================
+ * LISTE DES POKÉMONS À IMPORTER
+ * ========================================
+ * 
+ * Ce fichier contient la liste complète des 800+ Pokémons
+ * Structure de chaque Pokémon:
+ * {
+ *   "id": 1,                          // numéro unique du Pokémon
+ *   "name": {                          // noms dans différentes langues
+ *     "english": "Bulbasaur",
+ *     "japanese": "フシギダネ",
+ *     "chinese": "妙蛙种子",
+ *     "french": "Bulbizarre"
+ *   },
+ *   "type": ["Grass", "Poison"],      // 1 ou 2 types (vérifiez le schéma pour les types valides)
+ *   "base": {                          // statistiques de base
+ *     "HP": 45,                        // points de vie
+ *     "Attack": 49,                    // attaque
+ *     "Defense": 49,                   // défense
+ *     "SpecialAttack": 65,             // attaque spéciale
+ *     "SpecialDefense": 65,            // défense spéciale
+ *     "Speed": 45                      // vitesse (initiative)
+ *   },
+ *   "image": "http://localhost:3000/assets/pokemons/1.png"  // URL de l'image
+ * }
+ * 
+ * Types valides: Normal, Fire, Water, Grass, Electric, Ice, Fighting, Poison,
+ *                Ground, Flying, Psychic, Bug, Rock, Ghost, Dragon, Dark, Steel, Fairy
+ * 
+ * Les images doivent se trouver dans assets/pokemons/ avec le format: ID.png
+ */
+
 dotenv.config();
 
 const pokemonsList = [

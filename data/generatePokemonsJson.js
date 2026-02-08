@@ -16,6 +16,7 @@ const generatePokemonsJson = () => {
         
         // Écrire le fichier JSON
         fs.writeFileSync(filePath, pokemonsJson);
+         
         
         console.log('Le fichier pokemons.json a été généré avec succès !');
     } catch (error) {
