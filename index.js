@@ -143,7 +143,7 @@ app.listen(PORT, () => {
   `);
   console.log('💡 Conseil : Utilisez "npm run dev" pour le développement avec auto-reload');
 
-  
+
 });
 
 
