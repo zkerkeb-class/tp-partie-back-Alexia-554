@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
     try {
         // Récupérer les paramètres de requête
         const page = parseInt(req.query.page) || 1; // Numéro de page (défaut: 1)
-        const limit = parseInt(req.query.limit) || 12; // Pokémons par page (défaut: 12)
+        const limit = parseInt(req.query.limit) || 20; // Pokémons par page (défaut: 20)
         const typeFilter = req.query.type; // Type de Pokémon (optionnel)
         const searchQuery = req.query.search; // Recherche par nom (optionnel)
 
@@ -134,8 +134,134 @@ router.get("/types/all", async (req, res) => {
 });
 
 /**
- * Route : POST /pokemons/import
- * Description : Importer des Pokémons dans la base de données.
+ * Route : POST /pokemons
+ * Description : Créer un nouveau Pokémon
+ * 
+ * Body attendu :
+ * {
+ *   "id": 152,
+ *   "name": { "french": "Chikorita", "english": "Chikorita", "japanese": "チコリータ", "chinese": "菊草叶" },
+ *   "type": ["Grass"],
+ *   "base": { "HP": 45, "Attack": 49, "Defense": 65, "SpecialAttack": 49, "SpecialDefense": 65, "Speed": 45 },
+ *   "image": "/pokemons/152.png"
+ * }
+ */
+router.post("/", async (req, res) => {
+    try {
+        const newPokemon = req.body;
+
+        // Validation basique
+        if (!newPokemon.id || !newPokemon.name || !newPokemon.type || !newPokemon.base) {
+            return res.status(400).json({
+                error: "Données manquantes",
+                message: "Les champs id, name, type et base sont obligatoires"
+            });
+        }
+
+        // Vérifier que le pokemon n'existe pas déjà
+        const existing = await pokemon.findOne({ id: newPokemon.id });
+        if (existing) {
+            return res.status(409).json({
+                error: "Pokémon déjà existant",
+                message: `Un Pokémon avec l'ID ${newPokemon.id} existe déjà`
+            });
+        }
+
+        // Créer le nouveau Pokémon
+        const created = await pokemon.create(newPokemon);
+
+        res.status(201).json({
+            message: "✅ Pokémon créé avec succès",
+            pokemon: created
+        });
+    } catch (error) {
+        console.error("Erreur lors de la création du Pokémon:", error);
+        res.status(500).json({ 
+            error: "Erreur lors de la création",
+            message: error.message 
+        });
+    }
+});
+
+/**
+ * Route : PUT /pokemons/:id
+ * Description : Mettre à jour un Pokémon existant
+ * 
+ * Paramètres :
+ * - id : ID du Pokémon à modifier
+ * 
+ * Body attendu : les champs à modifier (au moins un)
+ */
+router.put("/:id", async (req, res) => {
+    try {
+        const pokemonId = parseInt(req.params.id);
+        const updates = req.body;
+
+        if (!updates || Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                error: "Aucune donnée à mettre à jour"
+            });
+        }
+
+        // Trouver et mettre à jour le Pokémon
+        const updated = await pokemon.findOneAndUpdate(
+            { id: pokemonId },
+            updates,
+            { new: true, runValidators: true } // new: true retourne le document mis à jour
+        );
+
+        if (!updated) {
+            return res.status(404).json({
+                error: "Pokémon non trouvé"
+            });
+        }
+
+        res.json({
+            message: "✅ Pokémon mis à jour avec succès",
+            pokemon: updated
+        });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du Pokémon:", error);
+        res.status(500).json({ 
+            error: "Erreur lors de la mise à jour",
+            message: error.message 
+        });
+    }
+});
+
+/**
+ * Route : DELETE /pokemons/:id
+ * Description : Supprimer un Pokémon spécifique
+ * 
+ * Paramètres :
+ * - id : ID du Pokémon à supprimer
+ */
+router.delete("/:id", async (req, res) => {
+    try {
+        const pokemonId = parseInt(req.params.id);
+
+        const deleted = await pokemon.findOneAndDelete({ id: pokemonId });
+
+        if (!deleted) {
+            return res.status(404).json({
+                error: "Pokémon non trouvé"
+            });
+        }
+
+        res.json({
+            message: "✅ Pokémon supprimé avec succès",
+            pokemon: deleted
+        });
+    } catch (error) {
+        console.error("Erreur lors de la suppression du Pokémon:", error);
+        res.status(500).json({ 
+            error: "Erreur lors de la suppression",
+            message: error.message 
+        });
+    }
+});
+
+/*
  * Attendu : fournir un tableau `pokemons` dans le corps de la requête (JSON)
  * Exemple de body : { "pokemons": [ { id: 1, name: {...}, type: [...], base: {...}, image: "..." }, ... ] }
  * Si aucun tableau n'est fourni, la route renvoie une instruction pour utiliser le script de seed (`npm run seed`).
