@@ -35,7 +35,13 @@ router.get("/", async (req, res) => {
 
         // Filtre par type si fourni
         if (typeFilter) {
-            filter.type = typeFilter;
+            // Supporte plusieurs types fournis en string comma-separated ou en tableau
+            let types = typeFilter;
+            if (typeof typeFilter === 'string') {
+                types = typeFilter.split(',').map(t => t.trim()).filter(Boolean);
+            }
+            // Rechercher les Pokémons ayant au moins un des types demandés
+            filter.type = { $in: types };
         }
 
         // Filtre par recherche si fournie

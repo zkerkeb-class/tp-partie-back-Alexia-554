@@ -62,7 +62,24 @@ app.use(express.urlencoded({ extended: true }));
  * Middleware pour servir les fichiers statiques (images, CSS, etc.)
  * Les fichiers dans le dossier "assets" sont accessibles publiquement
  */
-app.use(express.static('assets'));
+
+//app.use(express.static('assets'));
+
+/*
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import { connectDB } from './connect.js';
+import pokemon from './schema/pokemon.js';
+
+const app = express();
+
+//app.use(cors());             // Autorise le Frontend à se connecter
+app.use(express.json());     // Permet de lire le body des requêtes POST/PUT
+*/
+app.use('/assets', express.static('assets'));
+
+
 
 // ========================================
 // ROUTES
@@ -145,5 +162,7 @@ app.listen(PORT, () => {
 
 
 });
+
+//connectDB();
 
 
